@@ -12,8 +12,8 @@ const app = express();
 const server= http.createServer(app)
 
 // Initialize Socket.IO server
-export const io = new Server(server,{
-    cors:{origin: "*"} // Allow CORS for all origins
+export const io = new Server(server, {
+    cors:{origin:"*"}
 })
 
 // store online users
@@ -21,14 +21,14 @@ export const userSocketMap = {}; // {userId: socketId}
 
 // Socket.IO connection handler
 io.on("connection",(socket)=>{
-    const userId = socket.handshake.query.userId; // Get userId from query parameters
+    const userId = socket.handshake.query.userId; // Get userId from the frontend when the socket connection is established
     console.log("User connected: ", userId);
 
     if(userId){
-        userSocketMap[userId] = socket.id; // Map userId to socketId
+        userSocketMap[userId] = socket.id; // Map userId to socketId. user x is connected via socket y. 
     }
-    // Emit online users to all connected clients
-    io.emit("getOnlineUsers", Object.keys(userSocketMap))
+    // Emit online users to all connected clients.Server sends the list of currently online users to everyone who is connected.
+    io.emit("getOnlineUsers", Object.keys(userSocketMap)) // You want to know which users are online. You don’t care about socket IDs on the frontend
 
     socket.on("disconnect",()=>{
         console.log("User disconnected: ", userId);
