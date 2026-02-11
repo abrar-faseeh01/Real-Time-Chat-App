@@ -1,5 +1,8 @@
 import Message from "../models/Message";
 import User from "../models/User";
+import { io, userSocketMap } from "../server.js";
+import cloudinary from "../utils/cloudinary";
+
 
 export const  getUsersForSidebar = async (req, res) => {
     try {
@@ -60,3 +63,35 @@ export const markMessageAsSeen = async (re,res)=>{
     }
 }
 
+
+// function to send message to selected user
+export const sendMessage = async (req,res)=>{
+    try {
+        const {text, image} = req.body;
+        const receiverId = req.params.id; // id of the user to whom the message is being sent
+        const senderId = req.user._id; // id of the logged-in user sending the message
+        let imageUrl;
+        if(image){
+            const uploadResponse = await cloudinary.uploader.upload(image) 
+            imageUrl = uploadResponse.secure_url; // Get the secure URL of the uploaded image
+        }
+
+        const newMessage = await Message.create({
+            senderId,
+            receiverId,
+            text,
+            image: imageUrl
+        })
+        // Emit the new message to the receivers socket
+        const receiverSocketId = userSocketMap[receiverId];
+        if(receiverSocketId){
+            io.to(receiverSocketId).emit("newMessage", newMessage)
+        }
+
+        res.json({success: true, message: newMessage})
+    
+    } catch (error) {
+        console.log(error.message);
+        res.json({success: false, message: error.message});
+    }
+}
