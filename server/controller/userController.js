@@ -1,7 +1,7 @@
 // all the functions related to user operations will be defined here
 
-import { generateToken } from "../lib/utils";
-import User from "../models/User";
+import { generateToken } from "../lib/utils.js";
+import User from "../models/User.js";
 
 // Signup a new user
 export const signup = async(req, res)=>{
