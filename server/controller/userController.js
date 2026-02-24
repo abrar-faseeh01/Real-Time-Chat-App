@@ -1,12 +1,14 @@
 // all the functions related to user operations will be defined here
 
+import bcrypt from "bcrypt";
+import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/User.js";
 
 // Signup a new user
 export const signup = async(req, res)=>{
     try {
-        const{email, fullName, password} = req.body;
+        const{email, fullName, password, bio} = req.body;
         if(!email || !fullName || !password){
             return res.json({success: false, message: "All fields are required"})
         }
@@ -21,7 +23,7 @@ export const signup = async(req, res)=>{
         // const hashedPassword = await bcrypt.hash(password,salt)
         
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({email, fullName, password: hashedPassword});
+        const newUser = await User.create({email, fullName, password: hashedPassword, bio});
 
         // create token to authenticate user
          const token = generateToken(newUser._id);
@@ -58,7 +60,7 @@ export const login = async (req,res)=>{
 
     // controller to check if user is authenticated or not
     export const checkAuth =(req,res)=>{
-        res.json({success: true, user: req.user})
+        res.json({success: true, user: req.user}) 
     }
 
     // controller to update user profile

@@ -1,16 +1,32 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
+import { AuthContext } from "../context/AuthContext";
 
 const ProfilePage = () => {
+  const { authUser, updateProfile } = useContext(AuthContext);
   const [selectedImg, setSelectedImg] = useState(null);
   const navigate = useNavigate();
-  const [name, setName] = useState("Martin Johnson");
-  const [bio, setBio] = useState("Hi Everyone! I am Using QuickChat.");
+  const [name, setName] = useState(authUser.fullName);
+  const [bio, setBio] = useState(authUser.bio);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/"); // Redirect to home page after saving profile
+
+    if (!selectedImg) {
+      await updateProfile({ fullName: name, bio });
+      navigate("/"); // Redirect to home page after saving profile
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedImg); // readAsDataURL reads the content of the selected image file and encodes it as a base64 string. This allows us to send the image data to the backend in a format that can be easily stored and retrieved.
+    reader.onload = async () => {
+      // onload is triggered when the file is read successfully
+      const base64Img = reader.result;
+      await updateProfile({ fullName: name, bio, profilePic: base64Img });
+      navigate("/");
+    };
   };
 
   return (
@@ -68,8 +84,8 @@ const ProfilePage = () => {
           </button>
         </form>
         <img
-          className="max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10"
-          src={assets.logo_icon}
+          className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10  ${selectedImg && "rounded-full"}`}
+          src={authUser?.profilePic || assets.logo_icon}
           alt=""
         />
       </div>
