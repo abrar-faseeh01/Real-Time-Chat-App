@@ -1,0 +1,31 @@
+# ======================
+# ENV FILES (IMPORTANT)
+# ======================
+.env
+server/.env
+client/.env
+
+# ======================
+# NODE MODULES
+# ======================
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# ======================
+# BUILD FILES
+# ======================
+dist/
+build/
+client/dist/
+
+# ======================
+# LOG FILES
+# ======================
+*.log
+
+# ======================
+# OS FILES
+# ======================
+.DS_Store
+Thumbs.db
