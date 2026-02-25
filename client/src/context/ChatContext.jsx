@@ -43,10 +43,33 @@ export const ChatProvider = ({ children }) => {
         messageData,
       );
       if (data.success) {
+        setMessages((prevMessages) => [...prevMessages, data.message]);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  // function to subscribe to messages for selected user - using this we will get the new messages in real time without refreshing the page
+  const subscribeToMessages = async () => {
+    if (!socket) return;
+
+    socket.on("newMessage", (newMessage) => {
+      if (selectedUser && newMessage.senderId === selectedUser._id) {
+        newMessage.seen = true;
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+        axios.put(`api/messages/mark/${newMessage._id}`);
+      } else {
+        setUnseenMessages((prevUnseenMessages) => ({
+          ...prevUnseenMessages,
+          [newMessage.senderId]: prevUnseenMessages[newMessage.senderId]
+            ? prevUnseenMessages[newMessage.senderId] + 1
+            : 1,
+        }));
+      }
+    });
   };
 
   const value = {};
