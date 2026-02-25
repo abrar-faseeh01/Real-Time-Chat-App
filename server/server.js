@@ -43,8 +43,8 @@ app.use(express.json({limit: "4mb"}));
 
 // Route setup
 app.use("/api/status",(req,res)=> res.send("Server is live"))
-app.use("/api/auth",userRouter)
-app.use("/api/messages", messageRouter)
+app.use("/api/auth",userRouter) // All routes related to user authentication and profile management are handled by userRouter. This includes routes for login, registration, profile updates, etc.
+app.use("/api/messages", messageRouter) // All routes related to messaging are handled by messageRouter. This includes routes for sending messages, retrieving message history, etc. 
 
 
 // Connect to the database
