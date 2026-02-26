@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "./AuthContext.jsx";
 
@@ -43,7 +43,7 @@ export const ChatProvider = ({ children }) => {
         messageData,
       );
       if (data.success) {
-        setMessages((prevMessages) => [...prevMessages, data.message]);
+        setMessages((prevMessages) => [...prevMessages, data.message]); // add the new message to the messages state
       } else {
         toast.error(data.message);
       }
@@ -55,13 +55,14 @@ export const ChatProvider = ({ children }) => {
   // function to subscribe to messages for selected user - using this we will get the new messages in real time without refreshing the page
   const subscribeToMessages = async () => {
     if (!socket) return;
-
     socket.on("newMessage", (newMessage) => {
+      // Listen for new messages from the server. Whenever a new message is received, this callback function will be executed.
       if (selectedUser && newMessage.senderId === selectedUser._id) {
         newMessage.seen = true;
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         axios.put(`api/messages/mark/${newMessage._id}`);
       } else {
+        // Message came from someone else while you are chatting with another person.
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
           [newMessage.senderId]: prevUnseenMessages[newMessage.senderId]
@@ -72,7 +73,29 @@ export const ChatProvider = ({ children }) => {
     });
   };
 
-  const value = {};
+  // function to unsubscribe from messages when user logs out or changes chat
+  const unsubscribeFromMessages = () => {
+    if (socket) socket.off("newMessage");
+  };
+
+  useEffect(() => {
+    subscribeToMessages();
+    return () => {
+      unsubscribeFromMessages();
+    };
+  }, [socket, selectedUser]);
+
+  const value = {
+    messages,
+    setMessages,
+    selectedUser,
+    setSelectedUser,
+    users,
+    getUsers,
+    unseenMessages,
+    setUnseenMessages,
+    sendMessage,
+  };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
