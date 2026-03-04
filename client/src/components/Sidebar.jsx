@@ -78,8 +78,9 @@ const Sidebar = ({}) => {
           <div
             onClick={() => {
               setSelectedUser(user);
+              setUnseenMessages((prev) => ({ ...prev, [user._id]: 0 }));
             }}
-            key={index} // Using index as key for dummy data. React identify each list item during re-rendering
+            key={user._id} // Using index as key for dummy data. React identify each list item during re-rendering
             className={`relative flex items-center gap-2 p-2 pl-4 rounded cursor-pointer max-sm:text-sm ${
               selectedUser?._id === user._id && "bg-[#282142]/50"
             }`}
