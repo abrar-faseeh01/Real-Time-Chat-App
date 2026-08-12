@@ -4,10 +4,11 @@ import User from "../models/User.js";
 import { io, userSocketMap } from "../server.js";
 
 
-export const  getUsersForSidebar = async (req, res) => {
+export const getUsersForSidebar = async (req, res) => {
     try {
-     const userId = req.user._id;
+     const userId = req.user._id; // currently logged-in user id
      const filteredUser = await User.find({_id:{$ne: userId}}).select("-password")   // Fetch distinct users who have chatted with the logged-in user
+      
       // Count unseen messages from each user
       const unseenMessages={}
 

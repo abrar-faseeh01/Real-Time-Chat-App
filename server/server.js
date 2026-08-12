@@ -39,7 +39,7 @@ io.on("connection",(socket)=>{
 
 // Middleware setup
 app.use(cors())
-app.use(express.json({limit: "4mb"}));
+app.use(express.json({limit: "4mb"})); // Converts incoming request body to JSON format. Set a limit of 4MB for incoming JSON payloads. This is useful to prevent excessively large requests that could overwhelm the server.
 
 // Route setup
 app.use("/api/status",(req,res)=> res.send("Server is live"))

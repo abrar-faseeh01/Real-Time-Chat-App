@@ -42,7 +42,7 @@ const RightSidebar = () => {
           <div className="mt-2 max-h-[200px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
             {msgImages.map((url, index) => (
               <div
-                key={index}
+                key={index} // required for lists
                 onClick={() => window.open(url)}
                 className="cursor-pointer rounded"
               >
