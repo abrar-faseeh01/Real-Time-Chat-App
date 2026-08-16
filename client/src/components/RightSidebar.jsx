@@ -7,8 +7,9 @@ const RightSidebar = () => {
   const { selectedUser, messages } = useContext(ChatContext);
   const { logout, onlineUsers } = useContext(AuthContext);
   const [msgImages, setMsgImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  // Get all the images from the messages and set them to this.state.
+  // Get all the images from the messages
   useEffect(() => {
     setMsgImages(messages.filter((msg) => msg.image).map((msg) => msg.image));
   }, [messages]);
@@ -26,12 +27,14 @@ const RightSidebar = () => {
             alt=""
             className="w-20 aspect-[1/1] rounded-full"
           />
+
           <h1 className="px-10 text-xl font-medium mx-auto flex items-center gap-2">
             {onlineUsers.includes(selectedUser._id) && (
               <p className="w-2 h-2 rounded-full bg-green-500"></p>
             )}
             {selectedUser.fullName}
           </h1>
+
           <p className="px-10 mx-auto">{selectedUser.bio}</p>
         </div>
 
@@ -39,11 +42,12 @@ const RightSidebar = () => {
 
         <div className="px-5 text-xs">
           <p>Media</p>
+
           <div className="mt-2 max-h-[200px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
             {msgImages.map((url, index) => (
               <div
-                key={index} // required for lists
-                onClick={() => window.open(url)}
+                key={index}
+                onClick={() => setSelectedImage(url)}
                 className="cursor-pointer rounded"
               >
                 <img src={url} alt="" className="h-full rounded-md" />
@@ -51,6 +55,32 @@ const RightSidebar = () => {
             ))}
           </div>
         </div>
+
+        {/* Image Popup */}
+        {selectedImage && (
+          <div
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-4xl max-h-[90vh]"
+            >
+              <img
+                src={selectedImage}
+                alt=""
+                className="max-h-[90vh] max-w-full rounded-lg object-contain"
+              />
+
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-black text-xl flex items-center justify-center cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={() => logout()}

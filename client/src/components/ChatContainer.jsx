@@ -17,7 +17,7 @@ const ChatContainer = () => {
   // Handle sending a message
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (input.trim() === "") return null;
+    if (input.trim() === "") return null; // trim removes whitespace from both ends of a string. If the input is empty or only contains whitespace, we don't send the message.
     await sendMessage({ text: input.trim() }); //
     setInput("");
   };
@@ -39,6 +39,7 @@ const ChatContainer = () => {
     reader.readAsDataURL(file);
   };
 
+  // Fetch messages whenever a new user is selected
   useEffect(() => {
     if (selectedUser) {
       getMessages(selectedUser._id);

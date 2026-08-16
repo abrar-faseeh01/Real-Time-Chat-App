@@ -26,7 +26,7 @@ const Sidebar = ({}) => {
 
   useEffect(() => {
     getUsers();
-  }, [onlineUsers]);
+  }, [onlineUsers]); // Whenever the onlineUsers state changes, we call getUsers to update the list of users and their online status.
 
   return (
     // Based on if a user is selected or not I hide the element on medium screens and smaller

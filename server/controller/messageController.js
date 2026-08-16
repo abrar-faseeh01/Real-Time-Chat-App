@@ -31,18 +31,18 @@ export const getUsersForSidebar = async (req, res) => {
 // controller to fetch chat messages between logged-in user and another user
 export const getMessages = async (req,res)=>{
     try {
-        const {id: selectedUserId} = req.params;
+        const {id: selectedUserId} = req.params; 
         const myId = req.user._id;
 
         const messages = await Message.find({
-            $or:[
+            $or:[ // Fetch messages where either the logged-in user is the sender and the selected user is the receiver, or vice versa
                 {senderId: selectedUserId , receiverId: myId},
                 {senderId: myId , receiverId: selectedUserId}
             ]
         })
 
         await Message.updateMany(   // mark messages as seen when the user opens the chat
-            {senderId: selectedUserId , receiverId: myId}, {seen: true}
+            {senderId: selectedUserId , receiverId: myId}, {seen: true}  // updateMany has two main parts: WHAT TO FIND, WHAT TO CHANGE
         )
         res.json({success: true, messages});
     } catch (error) {
@@ -76,7 +76,7 @@ export const sendMessage = async (req,res)=>{
             const uploadResponse = await cloudinary.uploader.upload(image) 
             imageUrl = uploadResponse.secure_url; // Get the secure URL of the uploaded image
         }
-
+// save the message to the database
         const newMessage = await Message.create({
             senderId,
             receiverId,

@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       if (data.success) {
         setAuthUser(data.userData);
         connectSocket(data.userData);
-        axios.defaults.headers.common["token"] = data.token; // set the token in axios headers. Now all future requests using Axios automatically include the token. No need to manually add it every time.
+        axios.defaults.headers.common["token"] = data.token; // set the token in axios headers for future Axios requests. Now all future requests using Axios automatically include the token. No need to manually add it every time.
         setToken(data.token);
         localStorage.setItem("token", data.token); // store the token in local storage to persist login state
         toast.success(data.message);
@@ -75,7 +75,8 @@ export const AuthProvider = ({ children }) => {
 
   // Connect socket function to handle socket connection and online users updates
   const connectSocket = (userData) => {
-    if (!userData || socket?.connected) return;
+    if (!userData || socket?.connected) return; // if there is no user found or socket is already connected then don't do anything.
+
     const newSocket = io(backendUrl, {
       query: { userId: userData._id }, // Send userId to the backend when establishing the socket connection. This allows the backend to identify which user is connected via which socket. userId came from server.js.
     });

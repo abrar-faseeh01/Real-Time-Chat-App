@@ -24,11 +24,12 @@ io.on("connection",(socket)=>{
     const userId = socket.handshake.query.userId; // Get userId from the frontend when the socket connection is established
     console.log("User connected: ", userId);
 
-    if(userId){
+    if(userId){ // if userId is present, map it to the socket ID. This allows the server to know which socket corresponds to which user.
         userSocketMap[userId] = socket.id; // Map userId to socketId. user x is connected via socket y. 
     }
+
     // Emit online users to all connected clients.Server sends the list of currently online users to everyone who is connected.
-    io.emit("getOnlineUsers", Object.keys(userSocketMap)) // You want to know which users are online. You don’t care about socket IDs on the frontend
+    io.emit("getOnlineUsers", Object.keys(userSocketMap)) // You want to know which users are online. You don’t care about socket IDs on the frontend. keys = userIds
 
     socket.on("disconnect",()=>{
         console.log("User disconnected: ", userId);
