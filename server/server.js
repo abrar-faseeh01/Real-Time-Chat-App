@@ -2,6 +2,7 @@ import cors from 'cors';
 import "dotenv/config.js";
 import express from 'express';
 import http from 'http';
+import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
 import { connectDB } from './lib/db.js';
 import messageRouter from './routes/messageRoutes.js';
@@ -21,15 +22,26 @@ export const userSocketMap = {}; // {userId: socketId}
 
 // Socket.IO connection handler
 io.on("connection",(socket)=>{
-    const userId = socket.handshake.query.userId; // Get userId from the frontend when the socket connection is established
-    console.log("User connected: ", userId);
+    // Get the JWT sent by the frontend during the handshake, verify it,
+    // and derive userId from the verified token instead of trusting a raw query param.
+    const token = socket.handshake.auth?.token;
 
-    if(userId){ // if userId is present, map it to the socket ID. This allows the server to know which socket corresponds to which user.
-        userSocketMap[userId] = socket.id; // Map userId to socketId. user x is connected via socket y. 
+    let userId;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.userId;
+    } catch (error) {
+        console.log("Socket auth failed: ", error.message);
+        socket.disconnect(); // reject the connection if the token is missing or invalid
+        return;
     }
 
+    console.log("User connected: ", userId);
+
+    userSocketMap[userId] = socket.id; // Map userId to socketId. user x is connected via socket y. 
+
     // Emit online users to all connected clients.Server sends the list of currently online users to everyone who is connected.
-    io.emit("getOnlineUsers", Object.keys(userSocketMap)) // You want to know which users are online. You don’t care about socket IDs on the frontend. keys = userIds
+    io.emit("getOnlineUsers", Object.keys(userSocketMap)) // You want to know which users are online. You don’t care about socket IDs on the frontend
 
     socket.on("disconnect",()=>{
         console.log("User disconnected: ", userId);
@@ -40,7 +52,7 @@ io.on("connection",(socket)=>{
 
 // Middleware setup
 app.use(cors())
-app.use(express.json({limit: "4mb"})); // Converts incoming request body to JSON format. Set a limit of 4MB for incoming JSON payloads. This is useful to prevent excessively large requests that could overwhelm the server.
+app.use(express.json({limit: "4mb"}));
 
 // Route setup
 app.use("/api/status",(req,res)=> res.send("Server is live"))

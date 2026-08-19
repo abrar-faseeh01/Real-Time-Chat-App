@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.get("/api/auth/check");
       if (data.success) {
         setAuthUser(data.user);
-        connectSocket(data.user); // if the user is authenticated, we want to establish a socket connection immediately so that we can receive real-time updates about online users and messages. We pass the user data to the connectSocket function, which uses the user ID to identify the socket connection on the backend.
+        connectSocket(data.user, token); // token state is already valid here — it was read from localStorage on mount, before checkAuth runs
       }
     } catch (error) {
       toast.error(error.message);
@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.post(`/api/auth/${state}`, credentials);
       if (data.success) {
         setAuthUser(data.userData);
-        connectSocket(data.userData);
-        axios.defaults.headers.common["token"] = data.token; // set the token in axios headers for future Axios requests. Now all future requests using Axios automatically include the token. No need to manually add it every time.
+        connectSocket(data.userData, data.token); // pass the freshly-received token directly — token state isn't updated yet at this point
+        axios.defaults.headers.common["token"] = data.token; // set the token in axios headers. Now all future requests using Axios automatically include the token. No need to manually add it every time.
         setToken(data.token);
         localStorage.setItem("token", data.token); // store the token in local storage to persist login state
         toast.success(data.message);
@@ -74,11 +74,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Connect socket function to handle socket connection and online users updates
-  const connectSocket = (userData) => {
-    if (!userData || socket?.connected) return; // if there is no user found or socket is already connected then don't do anything.
-
+  const connectSocket = (userData, authToken) => {
+    if (!userData || socket?.connected) return;
     const newSocket = io(backendUrl, {
-      query: { userId: userData._id }, // Send userId to the backend when establishing the socket connection. This allows the backend to identify which user is connected via which socket. userId came from server.js.
+      auth: { token: authToken }, // send the JWT itself, not a raw userId, so the backend can verify identity instead of trusting a claim.
     });
     newSocket.connect();
     setSocket(newSocket);
